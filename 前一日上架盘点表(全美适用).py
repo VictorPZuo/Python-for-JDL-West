@@ -14,10 +14,12 @@ Streamlit App: 上架盘点表生成器（可选差异明细表 + 随机抽样�
 
 Streamlit App: 上架盘点表生成器（可选差异明细表 + 随机抽样）
 
-新增规则：
+新增规则 V1.0：
 步骤二中，上架员账号需剔除：
 1) 等于 xiao.han.1@jd.com
 2) 账号以 "jdhk_" 开头
+新增规则 V2.0：
+抽样过程中，剔除"A135"开头储位
 """
 
 import io
@@ -130,7 +132,7 @@ def sample_locations_to_check_table(
     pool_user = pool["上架员"]
 
     for i, user in enumerate(result["上架员"].tolist()):
-        eligible_mask = (pool_user != user)
+        eligible_mask = (pool_user != user) & (~pool_loc_norm.str.startswith("A135", "A137"))
         if excluded_locations:
             eligible_mask = eligible_mask & (~pool_loc_norm.isin(excluded_locations))
 
