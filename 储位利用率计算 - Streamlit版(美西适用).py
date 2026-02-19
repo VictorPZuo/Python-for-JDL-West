@@ -37,31 +37,31 @@ def ensure_columns(df, required_cols, file_name):
 def apply_rule(df_storage, rule):
     df = df_storage.copy()
 
-    # 兼容列名可能有空格
-    df.columns = [str(c).strip() for c in df.columns]
+    if rule_name == "LAX1":
+        # ✅ 修复：extract 返回 DataFrame 导致 mask 变二维的问题
+        # 从“储位编码”中解析 A 段：如 A70-R01-L02-B03 → 70
+        a_num = (
+            df["储位编码"]
+            .astype(str)
+            .str.split("-", expand=True)[0]       # 取 A 段
+            .str.extract(r"(\d+)")[0]             # ✅ 取第一列，变成 Series
+        )
+        a_num = pd.to_numeric(a_num, errors="coerce")
+        mask = a_num.between(70, 99, inclusive="both").fillna(False)
 
-    # 你原脚本里的规则逻辑保持不变（这里按当前文件实现）
-    # 若你后续想加规则，只需要在这里扩展即可
-    # 规则：按“储位编码”前缀判断
-    if "储位编码" not in df.columns:
-        st.error("储位信息表缺少列：储位编码")
-        st.stop()
+    elif rule_name == "LAX2":
+        mask = df["货架类型"].isin(["1窄巷道横梁式货架", "3搁板货架"])
 
-    df["储位编码"] = df["储位编码"].astype(str).str.strip()
+    elif rule_name == "LAX4":
+        mask = df.index == df.index  # 全部
 
-    if rule == "LAX1":
-        mask = df["储位编码"].str.startswith(("CW01", "CW02", "CW03", "CW04"))
-    elif rule == "LAX2":
-        mask = df["储位编码"].str.startswith(("CW05", "CW06", "CW07", "CW08"))
-    elif rule == "LAX4":
-        mask = df["储位编码"].str.startswith(("CW09", "CW10", "CW11", "CW12"))
-    else:  # LAX5
-        mask = df["储位编码"].str.startswith(("CW13", "CW14", "CW15", "CW16"))
+    elif rule_name == "LAX5":
+        mask = df["货架类型"].isin(["1单深横梁式货架"])
+
+    else:
+        mask = df.index == df.index
 
     return df.loc[mask].copy()
-
-def compute_capacity(df_storage):
-    df = df_storage.copy()
 
     # 数值化
     for c in ["长", "宽", "高"]:
@@ -215,3 +215,4 @@ if st.button("▶️ 开始计算", type="primary"):
         file_name=filename,
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
+
