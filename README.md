@@ -39,7 +39,7 @@
 识别使用率为 0% 的储位，可用于入库优化与库存盘点。  
 
 🔗 **访问地址：**  
-👉 [立即使用](https://python-for-jdl-west-storageusage.streamlit.app/)
+👉 [立即使用](https://python-for-jdl-storagelocation.streamlit.app/)
 
 </td>
 <td width="50%">
