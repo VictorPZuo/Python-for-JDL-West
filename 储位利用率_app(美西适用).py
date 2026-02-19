@@ -17,7 +17,7 @@ with st.expander("使用说明", expanded=True):
 3. 点击 **开始计算**，在页面查看结果并可下载 Excel。  
 
 **字段要求：**
-- 储位信息表（单位：毫米）：`储位编码`，`货架类型`，`长`，`宽`，`高`  
+- 储位信息表（单位：毫米）：`储位编码`，`货架类型`，`长`，`宽`，`高`，`填充率` 
 - 库存表（尺寸单位：英寸）：`储位编码`，`京东商品编码`，`长`，`宽`，`高`，`库存量`
 """)
 
@@ -76,11 +76,11 @@ def apply_rule(df, rule_name):
 
 def compute_capacity(df_storage_filtered):
     # 储位体积（毫米->立方米）
-    for c in ["长", "宽", "高"]:
+    for c in ["长", "宽", "高", "填充率"]:
         df_storage_filtered[c] = pd.to_numeric(df_storage_filtered[c], errors="coerce")
     df_storage_filtered["储位体积"] = (
         df_storage_filtered["长"] * df_storage_filtered["宽"] * df_storage_filtered["高"]
-    ) / (1000 ** 3)
+    ) * df_storage_filtered["填充率"] / (1000 ** 3)
     df_storage_filtered.loc[df_storage_filtered["储位体积"] <= 0, "储位体积"] = pd.NA
     return df_storage_filtered
 
